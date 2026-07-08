@@ -1,0 +1,37 @@
+{
+  "summary": "Comprehensive testing of LE MARRAKECHI (Expo/React Native + FastAPI + MongoDB). Backend: 22/22 tests passing after minor test-only fix (email lowercase). Frontend: All requested flows verified in Arabic RTL default including splash->home, quick book, menu categories/add-to-cart, product detail, boutique storytelling (story/packaging/gift), reservation auth-guard->auth screen->confirm, language switch (ar/en/fr), admin login + analytics panel, music with 5 tracks + playlists + playback controls. Minor deprecation warning detected: 'props.pointerEvents is deprecated. Use style.pointerEvents'.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "pointerEvents", "issue": "Console warning: 'props.pointerEvents is deprecated. Use style.pointerEvents'. Likely in a Pressable/View passing pointerEvents as a prop. Non-blocking but should be migrated to style.pointerEvents to be future-proof."}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_marrakechi_api.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "(Optional/minor) Search for `pointerEvents=` prop usages in the frontend and move them to `style={{ pointerEvents: ... }}` to remove the RN Web deprecation warning."
+  ],
+  "critical_code_review_comments": [
+    "server.py: /api/orders awards loyalty points based on int(inp.total) with client-supplied total - fine for MVP mock, but in production the server should recompute totals from item prices to prevent client-side manipulation.",
+    "server.py: /api/reservations does not validate against tables.available or conflicting bookings - acceptable for MVP but consider double-booking prevention.",
+    "server.py: assistant endpoint has no auth - anyone can hit LLM; consider rate-limiting or requiring auth to protect Emergent LLM budget.",
+    "seed_data.py uses external Unsplash URLs; if network to unsplash is restricted images will fail to load in some environments."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_marrakechi_api.py (new file, 22 pytest cases)"
+  ],
+  "success_rate": {"backend": "100% (22/22)", "frontend": "100% (all requested flows verified)"},
+  "seed_data_creation": "Backend POST /api/seed idempotently populated menu(18), products(9), events(3), tables(8), music(5), and admin user. Test-created customer accounts prefixed TEST_ (random uuid suffix).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend base URL from EXPO_PUBLIC_BACKEND_URL. Admin: admin@lemarrakechi.com/admin123. AI assistant returned live LLM reply (Emergent key had balance during test), but fallback path in server.py is confirmed to keep response 200 if balance is exhausted. All screens use testID; refer to /app/frontend/app/**/*.tsx for selectors. RTL Arabic is the default language.",
+  "rca_of_issue": "No blocker issues found. Backend test failure test_13_auth_me was a test-authored issue (server lowercases emails on register; test compared original mixed-case). Fixed in test file."
+}
